@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -82,25 +83,28 @@ public class WeatherAPICaller {
             JSONObject JSONob = new JSONObject(allDayInfo);
             JSONObject JSONobData = JSONob.getJSONObject("dataset").getJSONObject("resources").getJSONObject("resource").getJSONObject("data");
             JSONArray JSONarrTime = JSONobData.getJSONArray("time");
-            for(int i = 0; i<JSONarrTime.length();++i)
+            for(int i = 0; i < JSONarrTime.length();++i)
             {
                 JSONObject JSONobTime = JSONarrTime.getJSONObject(i);
-                String dataTime = JSONobTime.getString("dataTime");
-                if(!dataTime.equals(rExifTime)) continue;
+                String dateTime = JSONobTime.getString("DateTime");
+                dateTime = dateTime.substring(0, 10) + " "  + dateTime.substring(11, 19);
 
-                String url = JSONobTime.getString("url");
+                if(!dateTime.equals(rExifTime)) continue;
+
+                String url = JSONobTime.getString("ProductURL");
                 return url;
             }
+
             //return "None"; 2.1 Remark
             //2.1 Add
             JSONObject lastJSONobTime = JSONarrTime.getJSONObject(JSONarrTime.length()-1);
             //String url = JSONobTime.getString("url"); //2.2 Remark
             //return url; //2.2 Remark
             //2.2 Add
-            String date = lastJSONobTime.getString("dataTime").substring(0,10);
+            String date = lastJSONobTime.getString("DateTime").substring(0,10);
             if(rExifDate.equals(date))
             {
-                String url = lastJSONobTime.getString("url");
+                String url = lastJSONobTime.getString("ProductURL");
                 return url;
             }
             return "None";
@@ -145,9 +149,21 @@ public class WeatherAPICaller {
                     getDataCompleted = true;
                     return;
                 }
-                Connection conn = Jsoup.connect(url_hour);
-                conn.header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:32.0) Gecko/    20100101 Firefox/32.0");
-                final Document docs = conn.get();
+
+                URL wurl = new URL(url_hour);
+                HttpURLConnection connection = (HttpURLConnection) wurl.openConnection();
+                connection.setRequestMethod("GET");
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    content.append(inputLine);
+                }
+                in.close();
+                connection.disconnect();
+
+                Document docs = Jsoup.parse(content.toString(), "", org.jsoup.parser.Parser.xmlParser());
 
                 int closestIndex = 0;
                 Double minDistance=Double.MAX_VALUE;
