@@ -52,7 +52,7 @@ public class EXIFReader {
             exifInfo.put("exifWB", exifInterface.getAttribute(ExifInterface.TAG_WHITE_BALANCE)); //白平衡
             exifInfo.put("exifFocalLen", exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH)); //焦距
             //String exifWB = exifInterface.getAttribute(ExifInterface.TAG_WHITE_BALANCE); //白平衡  //5.0 delete 配合資料庫上傳
-            if(exifInfo.get("exifExposure").length()>6) exifInfo.put("exifExposure", exifInfo.get("exifExposure").substring(0,6));
+            //if(exifInfo.get("exifExposure").length()>6) exifInfo.put("exifExposure", exifInfo.get("exifExposure").substring(0,6));
             //if(exifInfo.get("exifWB").equals("0")) exifInfo.put("exifWB", "Auto"); //5.0 delete 配合資料庫上傳
         }
         catch (IOException e)
